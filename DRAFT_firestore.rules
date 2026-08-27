@@ -1,0 +1,99 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    function isValidId(id) { return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$'); }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isSignedIn() { return request.auth != null; }
+
+    function isValidUser(data) {
+      return data.keys().hasAll(['email', 'name'])
+        && data.email is string && data.email.size() <= 200
+        && data.name is string && data.name.size() <= 100;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && isValidId(userId) && request.auth.uid == userId
+        && isValidUser(incoming()) && incoming().keys().size() == 2;
+      allow update: if isSignedIn() && isValidId(userId) && request.auth.uid == userId
+        && isValidUser(incoming())
+        && incoming().diff(existing()).affectedKeys().hasOnly(['name']);
+      allow delete: if isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidStudyPlan(data) {
+      return data.keys().hasAll(['userId', 'course', 'subjects', 'createdAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.course is string && data.course.size() <= 100
+        && data.subjects is list && data.subjects.size() <= 50
+        && data.createdAt is number;
+    }
+
+    match /studyPlans/{planId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(planId)
+        && isValidStudyPlan(incoming()) && incoming().createdAt == request.time.toMillis();
+      allow update: if isSignedIn() && isValidId(planId) && existing().userId == request.auth.uid
+        && isValidStudyPlan(incoming()) && incoming().userId == existing().userId
+        && incoming().createdAt == existing().createdAt;
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    function isValidNote(data) {
+      return data.keys().hasAll(['userId', 'topic', 'type', 'content', 'createdAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.topic is string && data.topic.size() <= 200
+        && data.type is string && data.type.size() <= 50
+        && data.content is string && data.content.size() <= 50000
+        && data.createdAt is number;
+    }
+
+    match /notes/{noteId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(noteId)
+        && isValidNote(incoming()) && incoming().createdAt == request.time.toMillis();
+      allow update: if isSignedIn() && isValidId(noteId) && existing().userId == request.auth.uid
+        && isValidNote(incoming()) && incoming().userId == existing().userId
+        && incoming().createdAt == existing().createdAt;
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    function isValidResume(data) {
+      return data.keys().hasAll(['userId', 'lastUpdated'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.lastUpdated is number;
+    }
+
+    match /resumes/{resumeId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(resumeId)
+        && isValidResume(incoming());
+      allow update: if isSignedIn() && isValidId(resumeId) && existing().userId == request.auth.uid
+        && isValidResume(incoming()) && incoming().userId == existing().userId;
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+
+    function isValidRoadmap(data) {
+      return data.keys().hasAll(['userId', 'career', 'content', 'createdAt'])
+        && data.userId is string && data.userId == request.auth.uid
+        && data.career is string && data.career.size() <= 200
+        && data.content is string && data.content.size() <= 50000
+        && data.createdAt is number;
+    }
+
+    match /roadmaps/{roadmapId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn() && isValidId(roadmapId)
+        && isValidRoadmap(incoming()) && incoming().createdAt == request.time.toMillis();
+      allow update: if isSignedIn() && isValidId(roadmapId) && existing().userId == request.auth.uid
+        && isValidRoadmap(incoming()) && incoming().userId == existing().userId
+        && incoming().createdAt == existing().createdAt;
+      allow delete: if isSignedIn() && existing().userId == request.auth.uid;
+    }
+  }
+}

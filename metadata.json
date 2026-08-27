@@ -1,0 +1,8 @@
+{
+  "name": "StudentHelp",
+  "description": "Students ke har kaam ka smart digital helper.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

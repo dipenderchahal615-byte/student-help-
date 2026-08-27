@@ -1,0 +1,95 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "description": "User profile",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 }
+      },
+      "required": ["email", "name"]
+    },
+    "StudyPlan": {
+      "title": "StudyPlan",
+      "description": "A study plan for a user",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "course": { "type": "string", "maxLength": 100 },
+        "subjects": { "type": "array" },
+        "examDate": { "type": "string" },
+        "hoursPerDay": { "type": "number" },
+        "weakSubjects": { "type": "array" },
+        "strongSubjects": { "type": "array" },
+        "tasks": { "type": "array" },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["userId", "course", "subjects", "createdAt"]
+    },
+    "SavedNote": {
+      "title": "SavedNote",
+      "description": "A saved AI note",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "topic": { "type": "string", "maxLength": 200 },
+        "type": { "type": "string", "maxLength": 50 },
+        "content": { "type": "string", "maxLength": 50000 },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["userId", "topic", "type", "content", "createdAt"]
+    },
+    "ResumeData": {
+      "title": "ResumeData",
+      "description": "Resume data",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "personal": { "type": "object" },
+        "objective": { "type": "string", "maxLength": 5000 },
+        "education": { "type": "array" },
+        "experience": { "type": "array" },
+        "projects": { "type": "array" },
+        "skills": { "type": "array" },
+        "certificates": { "type": "array" },
+        "lastUpdated": { "type": "number" }
+      },
+      "required": ["userId", "lastUpdated"]
+    },
+    "CareerRoadmap": {
+      "title": "CareerRoadmap",
+      "description": "Generated career roadmap",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "career": { "type": "string", "maxLength": 200 },
+        "content": { "type": "string", "maxLength": 50000 },
+        "createdAt": { "type": "number" }
+      },
+      "required": ["userId", "career", "content", "createdAt"]
+    }
+  },
+  "firestore": {
+    "users/{userId}": {
+      "schema": "User",
+      "description": "User profiles"
+    },
+    "studyPlans/{planId}": {
+      "schema": "StudyPlan",
+      "description": "Study plans belonging to users"
+    },
+    "notes/{noteId}": {
+      "schema": "SavedNote",
+      "description": "Saved AI notes belonging to users"
+    },
+    "resumes/{resumeId}": {
+      "schema": "ResumeData",
+      "description": "Resumes belonging to users"
+    },
+    "roadmaps/{roadmapId}": {
+      "schema": "CareerRoadmap",
+      "description": "Career roadmaps belonging to users"
+    }
+  }
+}
