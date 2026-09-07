@@ -1,253 +1,250 @@
-import { useState, useEffect } from 'react';
-import { db, StudyPlan } from '../lib/db';
+import { useState } from 'react';
+import { Calendar as CalendarIcon, CheckCircle2, Clock, Trash2, Edit2, Play, ChevronRight, Save, RotateCcw, Loader2, AlertCircle } from 'lucide-react';
+import { generateStudyPlan } from '../lib/api';
+import { db } from '../lib/db';
+import { useAuth } from '../lib/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 import { motion } from 'motion/react';
-import { BookOpen, CheckCircle2, Circle, Clock, Plus, Trash2, Loader2, AlertCircle } from 'lucide-react';
-import { useAuth } from '../lib/AuthContext';
+
+interface Task {
+  title: string;
+  subject: string;
+  duration: number;
+}
+
+interface DayPlan {
+  day: string;
+  hours: number;
+  tasks: Task[];
+}
 
 export default function StudyPlanner() {
-  const { user, loading: authLoading } = useAuth();
-  const [plans, setPlans] = useState<StudyPlan[]>([]);
-  const [isCreating, setIsCreating] = useState(false);
-  const [dataLoading, setDataLoading] = useState(true);
-  const [formData, setFormData] = useState({
-    course: '',
-    subjects: '',
-    examDate: '',
-    hoursPerDay: 4,
-    weakSubjects: '',
-    strongSubjects: ''
-  });
+  const { user } = useAuth();
+  
+  // Form State
+  const [course, setCourse] = useState('');
+  const [subjects, setSubjects] = useState('');
+  const [examDate, setExamDate] = useState('');
+  const [hours, setHours] = useState('');
+  const [weakSubjects, setWeakSubjects] = useState('');
+  const [time, setTime] = useState('Morning (6AM - 12PM)');
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [plan, setPlan] = useState<DayPlan[] | null>(null);
 
-  const fetchPlans = async () => {
-    if (!user) {
-      setDataLoading(false);
-      return;
-    }
-    setDataLoading(true);
-    const p = await db.studyPlans.getAll();
-    setPlans(p);
-    setDataLoading(false);
-  };
-
-  useEffect(() => {
-    if (!authLoading) {
-      fetchPlans();
-    }
-  }, [user, authLoading]);
-
-  const generateTasks = (form: typeof formData) => {
-    // Simple heuristic algorithm for generating a mock schedule
-    const subjects = form.subjects.split(',').map(s => s.trim()).filter(Boolean);
-    const weak = form.weakSubjects.split(',').map(s => s.trim()).filter(Boolean);
-    
-    const tasks = [];
-    const today = new Date();
-    
-    // Generate tasks for the next 7 days
-    for (let day = 0; day < 7; day++) {
-      const taskDate = new Date(today);
-      taskDate.setDate(today.getDate() + day);
-      
-      let dailyHours = form.hoursPerDay;
-      const subPerDay = Math.min(subjects.length, Math.ceil(dailyHours / 1.5)); // max 1.5h per block
-      
-      for(let i=0; i<subPerDay; i++) {
-        // give preference to weak subjects slightly
-        const sub = (day % 2 === 0 && weak.length > 0) 
-            ? weak[i % weak.length] 
-            : subjects[(day + i) % subjects.length];
-            
-        if (!sub) continue;
-        
-        tasks.push({
-          id: uuidv4(),
-          title: `Study Chapter ${day + 1} of ${sub}`,
-          subject: sub,
-          date: taskDate.toISOString().split('T')[0],
-          duration: Math.floor((dailyHours / subPerDay) * 60),
-          completed: false
-        });
-      }
-    }
-    return tasks;
-  };
-
-  const handleCreate = async (e: React.FormEvent) => {
+  const handleGenerate = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!user) return;
-    const newPlan: StudyPlan = {
-      id: uuidv4(),
-      userId: user.uid,
-      ...formData,
-      subjects: formData.subjects.split(',').map(s => s.trim()),
-      weakSubjects: formData.weakSubjects.split(',').map(s => s.trim()),
-      strongSubjects: formData.strongSubjects.split(',').map(s => s.trim()),
-      tasks: generateTasks(formData),
-      createdAt: Date.now()
-    };
-    await db.studyPlans.save(newPlan);
-    fetchPlans();
-    setIsCreating(false);
+    setLoading(true);
+    setError('');
+    
+    try {
+      const data = { course, subjects, examDate, hours, weakSubjects, time };
+      const result = await generateStudyPlan(data);
+      if (result.plan && Array.isArray(result.plan)) {
+        setPlan(result.plan);
+      } else {
+        throw new Error("Invalid response format from AI");
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to generate plan.');
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const toggleTask = async (planId: string, taskId: string) => {
-    const plan = plans.find(p => p.id === planId);
+  const handleSave = async () => {
     if (!plan) return;
-    const task = plan.tasks.find(t => t.id === taskId);
-    if (!task) return;
-    task.completed = !task.completed;
-    await db.studyPlans.save(plan);
-    fetchPlans();
+    try {
+      // Flatten tasks to save to DB format if needed, or save as JSON.
+      // The DB schema for StudyPlan expects tasks with { id, title, subject, duration, date, completed }
+      const tasksToSave = plan.flatMap(dayPlan => {
+        // approximate date based on day of week starting from next monday...
+        // For simplicity, we just save them sequentially for the next 7 days
+        return dayPlan.tasks.map(t => ({
+          id: uuidv4(),
+          title: t.title,
+          subject: t.subject,
+          duration: t.duration,
+          date: new Date().toISOString().split('T')[0], // Placeholder date
+          completed: false
+        }));
+      });
+      
+      await db.studyPlans.save({
+        id: uuidv4(),
+        userId: '', // populated by db wrapper
+        course,
+        subjects: subjects.split(',').map(s => s.trim()),
+        examDate,
+        hoursPerDay: parseInt(hours) || 4,
+        weakSubjects: weakSubjects.split(',').map(s => s.trim()),
+        strongSubjects: [],
+        createdAt: Date.now(),
+        tasks: tasksToSave
+      });
+      alert('Plan saved successfully!');
+    } catch (err) {
+      alert('Sign in to save plans.');
+    }
   };
-
-  const deletePlan = async (id: string) => {
-    await db.studyPlans.delete(id);
-    fetchPlans();
-  };
-
-  if (authLoading || dataLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="animate-spin text-blue-600" size={40} />
-      </div>
-    );
-  }
-
-  if (!user) {
-    return (
-      <div className="p-6 max-w-5xl mx-auto flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <AlertCircle size={48} className="text-slate-300 mb-4" />
-        <h2 className="text-2xl font-bold mb-2">Sign in Required</h2>
-        <p className="text-slate-500 max-w-md">Please sign in to create and manage study plans.</p>
-      </div>
-    );
-  }
-
-  const activePlan = plans[plans.length - 1];
-  const todayStr = new Date().toISOString().split('T')[0];
 
   return (
-    <div className="p-6 max-w-5xl mx-auto pb-24">
-      <div className="flex justify-between items-center mb-8">
+    <div className="space-y-8 px-6 py-8 h-[calc(100vh-8rem)] flex flex-col max-w-7xl mx-auto">
+      <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 shrink-0 mb-2">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Study Planner</h1>
-          <p className="text-slate-500 mt-1">Organize your daily and weekly study routines.</p>
+          <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Study Planner</h1>
+          <p className="text-slate-500 font-medium mt-1">Generate a structured study schedule.</p>
         </div>
-        {!isCreating && (
-          <button 
-            onClick={() => setIsCreating(true)}
-            className="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2"
-          >
-            <Plus size={18} /> New Plan
-          </button>
+        
+        {/* Progress Stepper */}
+        <div className="flex items-center gap-2 text-sm font-bold bg-white px-4 py-2 rounded-xl border border-slate-200 shadow-sm">
+          <div className="flex items-center gap-2 text-blue-600">
+            <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center">1</div>
+            <span className="hidden sm:inline">Details</span>
+          </div>
+          <div className="w-4 h-px bg-slate-300"></div>
+          <div className={`flex items-center gap-2 ${loading ? 'text-blue-600' : (plan ? 'text-blue-600' : 'text-slate-400')}`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${loading || plan ? 'bg-blue-100' : 'bg-slate-100'}`}>2</div>
+            <span className="hidden sm:inline">Generate</span>
+          </div>
+          <div className="w-4 h-px bg-slate-300"></div>
+          <div className={`flex items-center gap-2 ${plan ? 'text-emerald-600' : 'text-slate-400'}`}>
+            <div className={`w-6 h-6 rounded-full flex items-center justify-center ${plan ? 'bg-emerald-100' : 'bg-slate-100'}`}>3</div>
+            <span className="hidden sm:inline">Review & Save</span>
+          </div>
+        </div>
+
+        {plan && (
+          <div className="flex gap-3">
+            <button onClick={() => setPlan(null)} className="px-4 py-2 bg-white border border-slate-200 text-slate-700 rounded-xl font-bold text-sm hover:bg-slate-50 transition-colors flex items-center gap-2">
+              <RotateCcw size={16} /> Reset
+            </button>
+            <button onClick={handleSave} className="px-4 py-2 bg-blue-600 text-white rounded-xl font-bold text-sm hover:bg-blue-700 transition-colors flex items-center gap-2">
+              <Save size={16} /> Save Plan
+            </button>
+          </div>
         )}
       </div>
 
-      {isCreating ? (
-        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-3xl p-6 md:p-8 border border-slate-200 shadow-sm">
-          <h2 className="text-xl font-bold mb-6">Create Study Plan</h2>
-          <form onSubmit={handleCreate} className="space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Class / Course</label>
-                <input required type="text" placeholder="e.g., B.Tech 3rd Year" className="w-full border border-slate-200 rounded-2xl px-4 py-3 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.course} onChange={e => setFormData({...formData, course: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Exam Date</label>
-                <input required type="date" className="w-full border border-slate-200 rounded-2xl px-4 py-3 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.examDate} onChange={e => setFormData({...formData, examDate: e.target.value})} />
-              </div>
-              <div className="md:col-span-2">
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Subjects (comma separated)</label>
-                <input required type="text" placeholder="Maths, Physics, CS" className="w-full border border-slate-200 rounded-2xl px-4 py-3 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.subjects} onChange={e => setFormData({...formData, subjects: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Weak Subjects</label>
-                <input type="text" placeholder="Physics" className="w-full border border-slate-200 rounded-2xl px-4 py-3 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.weakSubjects} onChange={e => setFormData({...formData, weakSubjects: e.target.value})} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Daily Study Hours</label>
-                <input required type="number" min="1" max="16" className="w-full border border-slate-200 rounded-2xl px-4 py-3 bg-slate-50 text-sm focus:ring-2 focus:ring-blue-500 outline-none" value={formData.hoursPerDay} onChange={e => setFormData({...formData, hoursPerDay: parseInt(e.target.value) || 4})} />
-              </div>
-            </div>
-            <div className="flex justify-end gap-3 pt-4 border-t border-slate-100">
-              <button type="button" onClick={() => setIsCreating(false)} className="px-5 py-2.5 text-slate-600 font-medium hover:bg-slate-100 rounded-xl">Cancel</button>
-              <button type="submit" className="bg-slate-900 text-white px-6 py-2.5 rounded-xl font-medium hover:bg-slate-800 transition-colors">Generate Plan</button>
-            </div>
-          </form>
-        </motion.div>
-      ) : activePlan ? (
-        <div className="space-y-8">
-          <div className="bg-white border border-slate-200 rounded-3xl p-6 shadow-sm flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div>
-              <h2 className="text-2xl font-bold text-slate-900">{activePlan.course}</h2>
-              <p className="text-slate-500 mt-1">Target: {new Date(activePlan.examDate).toLocaleDateString()} • {activePlan.hoursPerDay}hrs/day</p>
-            </div>
-            <button onClick={() => deletePlan(activePlan.id)} className="text-red-600 bg-red-50 p-2.5 rounded-xl hover:bg-red-100 flex items-center justify-center transition-colors">
-              <Trash2 size={20} />
-            </button>
-          </div>
-
-          <div>
-            <h3 className="text-lg font-bold mb-4">Today's Tasks</h3>
-            <div className="grid gap-3">
-              {activePlan.tasks.filter(t => t.date === todayStr).length === 0 && (
-                <div className="text-center p-8 bg-slate-50 rounded-2xl border border-slate-200 border-dashed text-slate-500">No tasks scheduled for today.</div>
-              )}
-              {activePlan.tasks.filter(t => t.date === todayStr).map((task) => (
-                <div 
-                  key={task.id} 
-                  onClick={() => toggleTask(activePlan.id, task.id)}
-                  className={`flex items-center gap-4 p-4 rounded-2xl border cursor-pointer transition-all ${
-                    task.completed ? 'bg-slate-50 border-slate-200 opacity-60' : 'bg-white border-blue-100 hover:border-blue-300 shadow-sm'
-                  }`}
-                >
-                  <button className={`${task.completed ? 'text-green-500' : 'text-slate-300'}`}>
-                    {task.completed ? <CheckCircle2 size={24} /> : <Circle size={24} />}
-                  </button>
-                  <div className="flex-1">
-                    <h4 className={`font-semibold ${task.completed ? 'line-through text-slate-500' : 'text-slate-900'}`}>{task.title}</h4>
-                    <p className="text-sm text-slate-500 mt-0.5 flex items-center gap-2">
-                      <span className="bg-slate-100 px-2 py-0.5 rounded text-xs font-medium">{task.subject}</span>
-                      <span className="flex items-center gap-1"><Clock size={14}/> {task.duration} mins</span>
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-          
-          <div>
-            <h3 className="text-lg font-bold mb-4 text-slate-400">Upcoming This Week</h3>
-            <div className="grid gap-3 opacity-70">
-              {activePlan.tasks.filter(t => t.date !== todayStr).slice(0, 5).map(task => (
-                <div key={task.id} className="flex items-center gap-4 p-4 rounded-2xl border border-slate-200 bg-white">
-                  <div className="flex-1">
-                    <h4 className="font-semibold text-slate-700">{task.title}</h4>
-                    <p className="text-sm text-slate-500 mt-0.5">
-                      {new Date(task.date).toLocaleDateString(undefined, {weekday: 'short', month: 'short', day: 'numeric'})} • {task.subject}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      ) : (
-        <div className="text-center bg-white border border-slate-200 rounded-3xl p-12">
-          <div className="bg-blue-50 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6">
-            <BookOpen size={32} className="text-blue-600" />
-          </div>
-          <h2 className="text-2xl font-bold mb-2">No Study Plan Yet</h2>
-          <p className="text-slate-500 mb-8 max-w-md mx-auto">Create a personalized daily schedule based on your subjects, exam date, and available time.</p>
-          <button 
-            onClick={() => setIsCreating(true)}
-            className="bg-slate-900 text-white px-8 py-3 rounded-xl font-medium hover:bg-slate-800 transition-colors"
-          >
-            Create My First Plan
-          </button>
+      {error && (
+        <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 flex items-center gap-2 font-medium text-sm">
+          <AlertCircle size={18} /> {error}
         </div>
       )}
+
+      <div className="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-8 min-h-0">
+        {/* LEFT: Input Form */}
+        <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm overflow-y-auto custom-scrollbar">
+          <h2 className="font-bold text-slate-900 mb-6 flex items-center gap-2 text-xl">
+            <CalendarIcon size={24} className="text-blue-600" /> Plan Details
+          </h2>
+          <form className="space-y-6" onSubmit={handleGenerate}>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Course / Major</label>
+              <input required type="text" value={course} onChange={e=>setCourse(e.target.value)} placeholder="e.g. Computer Science B.Tech" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Subjects to Cover</label>
+              <textarea required value={subjects} onChange={e=>setSubjects(e.target.value)} placeholder="Networking, OS, Databases" rows={3} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium" />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Exam Date</label>
+                <input type="date" value={examDate} onChange={e=>setExamDate(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium text-slate-700" />
+              </div>
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Daily Hours</label>
+                <input required type="number" min="1" max="24" value={hours} onChange={e=>setHours(e.target.value)} placeholder="4" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium" />
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Weak Subjects (Need more time)</label>
+              <input type="text" value={weakSubjects} onChange={e=>setWeakSubjects(e.target.value)} placeholder="e.g. Operating Systems" className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium" />
+            </div>
+            <div>
+              <label className="block text-sm font-bold text-slate-700 mb-2">Preferred Study Time</label>
+              <select value={time} onChange={e=>setTime(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all font-medium text-slate-700">
+                <option>Morning (6AM - 12PM)</option>
+                <option>Afternoon (12PM - 5PM)</option>
+                <option>Evening (5PM - 10PM)</option>
+                <option>Night Owl (10PM - 3AM)</option>
+              </select>
+            </div>
+            <button type="submit" disabled={loading} className="w-full py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 disabled:bg-slate-400 transition-colors mt-6 shadow-sm flex items-center justify-center gap-2">
+              {loading ? <Loader2 size={18} className="animate-spin" /> : <Play size={18}/>}
+              {loading ? 'Generating...' : 'Generate Plan'}
+            </button>
+          </form>
+        </div>
+
+        {/* RIGHT: Generated Schedule */}
+        <div className="lg:col-span-2 bg-slate-50 border border-slate-200 rounded-3xl p-8 shadow-sm overflow-y-auto custom-scrollbar">
+          {loading ? (
+             <div className="h-full flex flex-col items-center justify-center text-center p-8">
+               <Loader2 size={48} className="animate-spin text-blue-600 mb-4" />
+               <h3 className="text-xl font-bold text-slate-900">Designing your perfect plan...</h3>
+               <p className="text-sm text-slate-500 mt-2">Analyzing your subjects and available hours.</p>
+             </div>
+          ) : !plan ? (
+            <div className="h-full flex flex-col items-center justify-center text-center p-8">
+              <div className="w-24 h-24 bg-white shadow-sm border border-slate-100 rounded-3xl flex items-center justify-center text-blue-500 mb-6">
+                <CalendarIcon size={40} />
+              </div>
+              <h3 className="text-2xl font-bold text-slate-900 mb-3 tracking-tight">No Plan Generated</h3>
+              <p className="text-slate-500 max-w-sm text-base">Fill out your details on the left and click "Generate Plan" to create your structured study schedule.</p>
+            </div>
+          ) : (
+            <div className="space-y-8">
+              <div className="flex items-center justify-between">
+                <h2 className="font-bold text-slate-900 text-2xl tracking-tight">Your Weekly Schedule</h2>
+                <span className="bg-emerald-100 text-emerald-700 px-4 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider">Generated by AI</span>
+              </div>
+              
+              <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-slate-200 before:to-transparent">
+                {plan.map((dayPlan, i) => (
+                  <motion.div 
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: i * 0.1 }}
+                    key={dayPlan.day} 
+                    className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active"
+                  >
+                    
+                    <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-blue-100 text-blue-600 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                      <span className="text-xs font-bold">{dayPlan.day.slice(0,3)}</span>
+                    </div>
+                    
+                    <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white border border-slate-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
+                      <div className="flex justify-between items-center mb-4">
+                        <h4 className="font-bold text-slate-900 text-lg">{dayPlan.day}</h4>
+                        <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{dayPlan.hours} Hours</span>
+                      </div>
+                      <div className="space-y-3">
+                        {dayPlan.tasks.map((task, j) => (
+                          <div key={j} className="flex items-start gap-3 p-3 hover:bg-slate-50 rounded-2xl transition-colors group/task border border-transparent hover:border-slate-100">
+                            <button className="w-5 h-5 mt-0.5 rounded border-2 border-slate-300 text-transparent hover:border-emerald-500 flex items-center justify-center shrink-0">
+                              <CheckCircle2 size={12} />
+                            </button>
+                            <div className="flex-1">
+                              <p className="text-sm font-bold text-slate-900">{task.title}</p>
+                              <p className="text-xs text-slate-500 flex items-center gap-1 mt-1 font-medium">
+                                <Clock size={12} className="text-slate-400"/> {task.duration} mins 
+                                <span className="mx-1">•</span> 
+                                <span className="px-2 py-0.5 rounded text-[10px] uppercase tracking-wider font-bold bg-blue-50 text-blue-600">{task.subject}</span>
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

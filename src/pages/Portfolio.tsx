@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { db, ResumeData, PortfolioData } from '../lib/db';
 import { Link2, Globe, ExternalLink, Loader2, Save, PenTool } from 'lucide-react';
 import { useAuth } from '../lib/AuthContext';
@@ -88,7 +89,7 @@ export default function Portfolio() {
         <div className="w-20 h-20 bg-slate-100 rounded-full flex items-center justify-center text-slate-400 mb-4"><PenTool size={32}/></div>
         <h2 className="text-2xl font-bold text-slate-900">You need a Resume First</h2>
         <p className="text-slate-500 mb-6">Your portfolio is generated automatically from your resume data. Please build your resume first.</p>
-        <a href="/resume-builder" className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold">Go to Resume Builder</a>
+        <Link to="/resume" className="bg-blue-600 hover:bg-blue-700 transition-colors shadow-sm text-white px-6 py-3 rounded-xl font-bold">Go to Resume Studio</Link>
       </div>
     );
   }

@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Send, Bot, User as UserIcon, Loader2, Sparkles, Trash2 } from 'lucide-react';
 import { db, ChatMessage } from '../lib/db';
+import { sendChatMessage } from '../lib/api';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../lib/AuthContext';
 import ReactMarkdown from 'react-markdown';
@@ -51,17 +52,10 @@ export default function AIChat() {
       await db.chats.save(userMessage);
 
       // Call API
-      const response = await fetch('/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage.content,
-          history: messages.map(m => ({ role: m.role, content: m.content }))
-        })
-      });
-
-      if (!response.ok) throw new Error('Failed to get response');
-      const data = await response.json();
+      const data = await sendChatMessage(
+        userMessage.content,
+        messages.map(m => ({ role: m.role, content: m.content }))
+      );
 
       const aiMessage: ChatMessage = {
         id: uuidv4(),
@@ -77,13 +71,13 @@ export default function AIChat() {
       // Reward XP for interacting with AI (max once per message)
       db.gamification.addXP(10);
 
-    } catch (e) {
-      console.error(e);
+    } catch (e: any) {
+      console.error("Chat Error:", e);
       const errorMsg: ChatMessage = {
         id: uuidv4(),
         userId: user.uid,
         role: 'assistant',
-        content: "Sorry, I'm having trouble connecting to my brain right now. Please try again later.",
+        content: `Sorry, I'm having trouble connecting right now. Error details: ${e.message}. Please try again later.`,
         timestamp: Date.now()
       };
       setMessages(prev => [...prev, errorMsg]);

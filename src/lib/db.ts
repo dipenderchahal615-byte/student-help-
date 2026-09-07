@@ -104,16 +104,41 @@ export interface CareerRoadmap {
   createdAt: number;
 }
 
+export interface UpcomingExam {
+  id: string;
+  userId: string;
+  name: string;
+  subject: string;
+  date: string; // YYYY-MM-DD
+  time?: string;
+  description?: string;
+  createdAt: number;
+}
+
+export interface DailyGoal {
+  id: string;
+  userId: string;
+  title: string;
+  date: string; // YYYY-MM-DD
+  completed: boolean;
+  category?: string;
+  createdAt: number;
+}
+
+function getLocalUid() {
+  return localStorage.getItem('studenthelp_local_uid');
+}
+
 function ensureAuth() {
-  if (!auth.currentUser) throw new Error("User not authenticated");
-  return auth.currentUser.uid;
+  const uid = auth.currentUser?.uid || getLocalUid();
+  if (!uid) throw new Error("User not authenticated");
+  return uid;
 }
 
 export const db = {
   user: {
     get: async (): Promise<User | null> => {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return null;
+      const uid = ensureAuth();
       try {
         const d = await getDoc(doc(firestore, 'users', uid));
         if (d.exists()) return { id: d.id, ...d.data() } as User;
@@ -322,9 +347,10 @@ export const db = {
     getAll: async (): Promise<ChatMessage[]> => {
       const uid = ensureAuth();
       try {
-        const q = query(collection(firestore, 'chats'), where('userId', '==', uid), orderBy('timestamp', 'asc'));
+        const q = query(collection(firestore, 'chats'), where('userId', '==', uid));
         const res = await getDocs(q);
-        return res.docs.map(d => ({ id: d.id, ...d.data() } as ChatMessage));
+        const data = res.docs.map(d => ({ id: d.id, ...d.data() } as ChatMessage));
+        return data.sort((a, b) => a.timestamp - b.timestamp);
       } catch (error) {
         handleFirestoreError(error, OperationType.LIST, 'chats');
         return [];
@@ -353,8 +379,7 @@ export const db = {
   },
   gamification: {
     addXP: async (amount: number) => {
-      const uid = auth.currentUser?.uid;
-      if (!uid) return;
+      const uid = ensureAuth();
       try {
         const userRef = doc(firestore, 'users', uid);
         const d = await getDoc(userRef);
@@ -370,6 +395,66 @@ export const db = {
         }, { merge: true });
       } catch (error) {
         handleFirestoreError(error, OperationType.WRITE, `users/${uid}`);
+      }
+    }
+  },
+  exams: {
+    getAll: async (): Promise<UpcomingExam[]> => {
+      const uid = ensureAuth();
+      try {
+        const q = query(collection(firestore, 'exams'), where('userId', '==', uid));
+        const res = await getDocs(q);
+        return res.docs.map(d => ({ id: d.id, ...d.data() } as UpcomingExam));
+      } catch (error) {
+        handleFirestoreError(error, OperationType.LIST, 'exams');
+        return [];
+      }
+    },
+    save: async (exam: UpcomingExam) => {
+      const uid = ensureAuth();
+      exam.userId = uid;
+      try {
+        await setDoc(doc(firestore, 'exams', exam.id), exam);
+      } catch (error) {
+        handleFirestoreError(error, OperationType.WRITE, `exams/${exam.id}`);
+      }
+    },
+    delete: async (id: string) => {
+      ensureAuth();
+      try {
+        await deleteDoc(doc(firestore, 'exams', id));
+      } catch (error) {
+        handleFirestoreError(error, OperationType.DELETE, `exams/${id}`);
+      }
+    }
+  },
+  dailyGoals: {
+    getAll: async (): Promise<DailyGoal[]> => {
+      const uid = ensureAuth();
+      try {
+        const q = query(collection(firestore, 'dailyGoals'), where('userId', '==', uid));
+        const res = await getDocs(q);
+        return res.docs.map(d => ({ id: d.id, ...d.data() } as DailyGoal));
+      } catch (error) {
+        handleFirestoreError(error, OperationType.LIST, 'dailyGoals');
+        return [];
+      }
+    },
+    save: async (goal: DailyGoal) => {
+      const uid = ensureAuth();
+      goal.userId = uid;
+      try {
+        await setDoc(doc(firestore, 'dailyGoals', goal.id), goal);
+      } catch (error) {
+        handleFirestoreError(error, OperationType.WRITE, `dailyGoals/${goal.id}`);
+      }
+    },
+    delete: async (id: string) => {
+      ensureAuth();
+      try {
+        await deleteDoc(doc(firestore, 'dailyGoals', id));
+      } catch (error) {
+        handleFirestoreError(error, OperationType.DELETE, `dailyGoals/${id}`);
       }
     }
   }

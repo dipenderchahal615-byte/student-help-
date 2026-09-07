@@ -104,25 +104,41 @@ export default function ResumeBuilder() {
   }
 
   return (
-    <div className="p-6 max-w-7xl mx-auto pb-24 flex flex-col xl:flex-row gap-8">
+    <div className="p-6 max-w-7xl mx-auto pb-24 flex flex-col gap-6">
       
-      {/* Editor Side */}
-      <div className="w-full xl:w-1/2 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[800px] print:hidden">
-        
-        <div className="bg-slate-50 border-b border-slate-200 p-4 flex gap-2 overflow-x-auto whitespace-nowrap hide-scrollbar">
-          {['personal', 'objective', 'education', 'skills', 'experience', 'projects', 'certificates'].map(tab => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              className={`px-4 py-2 rounded-xl text-sm font-medium capitalize transition-colors ${
-                activeTab === tab ? 'bg-green-100 text-green-700' : 'text-slate-600 hover:bg-slate-200'
-              }`}
-            >
-              {tab}
-            </button>
-          ))}
+      {/* Progress Stepper */}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 print:hidden">
+        <div className="flex flex-wrap items-center justify-between gap-4 overflow-x-auto hide-scrollbar">
+          {['personal', 'objective', 'education', 'skills', 'experience', 'projects', 'certificates'].map((tab, idx, arr) => {
+            const isActive = activeTab === tab;
+            const isCompleted = arr.indexOf(tab) < arr.indexOf(activeTab);
+            return (
+              <div key={tab} className="flex items-center gap-3 shrink-0">
+                <button 
+                  onClick={() => setActiveTab(tab)}
+                  className={`flex items-center gap-2 font-bold text-sm transition-colors ${
+                  isActive ? 'text-blue-600' : (isCompleted ? 'text-emerald-600' : 'text-slate-400 hover:text-slate-600')
+                }`}>
+                  <div className={`w-7 h-7 rounded-full flex items-center justify-center border-2 ${
+                    isActive ? 'border-blue-600 bg-blue-50 text-blue-600' : (
+                      isCompleted ? 'border-emerald-600 bg-emerald-50 text-emerald-600' : 'border-slate-200 bg-slate-50 text-slate-400'
+                    )
+                  }`}>
+                    {idx + 1}
+                  </div>
+                  <span className="capitalize">{tab}</span>
+                </button>
+                {idx < arr.length - 1 && <div className="w-8 h-px bg-slate-200 ml-3"></div>}
+              </div>
+            );
+          })}
         </div>
+      </div>
 
+      <div className="flex flex-col xl:flex-row gap-8">
+        {/* Editor Side */}
+        <div className="w-full xl:w-1/2 bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden flex flex-col h-[800px] print:hidden">
+          
         <div className="p-6 flex-1 overflow-y-auto">
           {activeTab === 'personal' && (
             <div className="space-y-4">
@@ -369,7 +385,7 @@ export default function ResumeBuilder() {
         </div>
         </div>
       </div>
-
+      </div>
     </div>
   );
 }

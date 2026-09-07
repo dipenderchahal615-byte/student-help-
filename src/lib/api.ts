@@ -37,3 +37,27 @@ export async function evaluateInterviewAnswer(question: string, answer: string) 
   if (!res.ok) throw new Error("Failed to evaluate answer");
   return res.json();
 }
+
+export async function generateStudyPlan(data: any) {
+  const res = await fetch("/api/ai/study-plan", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  });
+  if (!res.ok) throw new Error("Failed to generate study plan");
+  return res.json();
+}
+
+export async function sendChatMessage(message: string, history: any[]) {
+  const res = await fetch("/api/ai/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ message, history }),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    console.error("AI API Error Response:", text);
+    throw new Error(`Failed to send message: ${res.status} ${text}`);
+  }
+  return res.json();
+}

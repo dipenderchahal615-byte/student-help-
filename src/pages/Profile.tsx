@@ -61,7 +61,7 @@ export default function Profile() {
   const progressToNextLevel = Math.round((xp / nextLevelXP) * 100);
 
   return (
-    <div className="p-6 md:p-10 max-w-4xl mx-auto space-y-8 pb-24">
+    <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-8 pb-24">
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Your Profile</h1>
         <p className="text-slate-500 mt-1">Manage your account and view your progress.</p>
@@ -70,23 +70,23 @@ export default function Profile() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Profile Card */}
         <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm md:col-span-1 flex flex-col items-center text-center">
-          <div className="w-24 h-24 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mb-4">
+          <div className="w-28 h-28 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6 shadow-sm border border-blue-100">
             {user.photoURL ? (
               <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
             ) : (
-              <User size={40} />
+              <User size={48} />
             )}
           </div>
-          <h2 className="text-xl font-bold text-slate-900">{user.displayName || 'Student'}</h2>
-          <p className="text-sm text-slate-500 flex items-center gap-2 mt-1">
-            <Mail size={14} /> {user.email}
+          <h2 className="text-2xl font-bold text-slate-900 mb-1">{user.displayName || 'Student'}</h2>
+          <p className="text-sm text-slate-500 flex items-center gap-2 mb-2 font-medium">
+            <Mail size={16} /> {user.email}
           </p>
           
-          <div className="w-full h-px bg-slate-100 my-6"></div>
+          <div className="w-full h-px bg-slate-100 my-8"></div>
           
           <button 
             onClick={handleSignOut}
-            className="w-full py-3 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 hover:border-red-200 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors"
+            className="w-full py-3.5 bg-slate-50 hover:bg-red-50 text-slate-600 hover:text-red-600 border border-slate-200 hover:border-red-200 rounded-xl font-bold flex items-center justify-center gap-2 transition-colors shadow-sm"
           >
             <LogOut size={18} /> Sign Out
           </button>
@@ -95,40 +95,40 @@ export default function Profile() {
         {/* Gamification Stats */}
         <div className="md:col-span-2 space-y-6">
           <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm">
-            <h3 className="font-bold text-slate-900 mb-6 text-lg flex items-center gap-2">
-              <Trophy className="text-blue-500"/> Level & Experience
+            <h3 className="font-bold text-slate-900 mb-8 text-xl flex items-center gap-2">
+              <Trophy className="text-blue-600"/> Level & Experience
             </h3>
             
-            <div className="flex flex-col md:flex-row items-center gap-6 mb-8">
-              <div className="w-24 h-24 rounded-full border-4 border-blue-100 flex items-center justify-center relative">
-                <div className="absolute inset-0 rounded-full border-4 border-blue-500 border-t-transparent" style={{ transform: `rotate(${progressToNextLevel * 3.6}deg)` }}></div>
-                <div className="text-center">
-                  <span className="block text-xs font-bold text-slate-500 uppercase tracking-widest">Level</span>
-                  <span className="block text-3xl font-black text-slate-900">{level}</span>
+            <div className="flex flex-col md:flex-row items-center gap-8 mb-8">
+              <div className="w-28 h-28 rounded-full border-8 border-blue-50 flex items-center justify-center relative shadow-sm">
+                <div className="absolute inset-[-4px] rounded-full border-[8px] border-blue-500 border-t-transparent" style={{ transform: `rotate(${progressToNextLevel * 3.6}deg)` }}></div>
+                <div className="text-center z-10">
+                  <span className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest">Level</span>
+                  <span className="block text-3xl font-black text-slate-900 leading-none mt-1">{level}</span>
                 </div>
               </div>
               <div className="flex-1 w-full text-center md:text-left">
-                <p className="font-bold text-slate-800 mb-2">{xp} / {nextLevelXP} XP</p>
-                <div className="w-full bg-slate-100 rounded-full h-3">
-                  <div className="bg-blue-600 h-3 rounded-full transition-all duration-1000" style={{ width: `${progressToNextLevel}%` }}></div>
+                <p className="font-bold text-slate-800 mb-3 text-lg">{xp} <span className="text-slate-400">/ {nextLevelXP} XP</span></p>
+                <div className="w-full bg-slate-100 rounded-full h-4 shadow-inner">
+                  <div className="bg-blue-600 h-4 rounded-full transition-all duration-1000" style={{ width: `${progressToNextLevel}%` }}></div>
                 </div>
-                <p className="text-sm text-slate-500 mt-3">Earn {nextLevelXP - xp} more XP to reach level {level + 1}!</p>
+                <p className="text-sm text-slate-500 mt-4 font-medium">Earn <span className="text-blue-600 font-bold">{nextLevelXP - xp} more XP</span> to reach level {level + 1}!</p>
               </div>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl flex items-center gap-4">
-                <div className="bg-white p-3 rounded-xl shadow-sm text-orange-500"><Flame size={24}/></div>
+              <div className="bg-orange-50 border border-orange-100 p-5 rounded-2xl flex items-center gap-4 transition-transform hover:scale-[1.02]">
+                <div className="bg-white p-3.5 rounded-xl shadow-sm text-orange-500"><Flame size={24}/></div>
                 <div>
-                  <p className="text-xs font-bold text-orange-600 uppercase tracking-wider mb-0.5">Day Streak</p>
-                  <p className="text-2xl font-black text-orange-900">{streak}</p>
+                  <p className="text-[11px] font-bold text-orange-600 uppercase tracking-wider mb-1">Day Streak</p>
+                  <p className="text-2xl font-black text-orange-900 leading-none">{streak}</p>
                 </div>
               </div>
-              <div className="bg-purple-50 border border-purple-100 p-4 rounded-2xl flex items-center gap-4">
-                <div className="bg-white p-3 rounded-xl shadow-sm text-purple-500"><Star size={24}/></div>
+              <div className="bg-purple-50 border border-purple-100 p-5 rounded-2xl flex items-center gap-4 transition-transform hover:scale-[1.02]">
+                <div className="bg-white p-3.5 rounded-xl shadow-sm text-purple-500"><Star size={24}/></div>
                 <div>
-                  <p className="text-xs font-bold text-purple-600 uppercase tracking-wider mb-0.5">Total XP</p>
-                  <p className="text-2xl font-black text-purple-900">{xp}</p>
+                  <p className="text-[11px] font-bold text-purple-600 uppercase tracking-wider mb-1">Total XP</p>
+                  <p className="text-2xl font-black text-purple-900 leading-none">{xp}</p>
                 </div>
               </div>
             </div>

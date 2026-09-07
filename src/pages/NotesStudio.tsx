@@ -3,8 +3,9 @@ import { useState } from 'react';
 import { generateNotes } from '../lib/api';
 import { db } from '../lib/db';
 import { v4 as uuidv4 } from 'uuid';
-import { Loader2, Save, FileText, Copy, RefreshCw, XCircle } from 'lucide-react';
+import { Loader2, Save, FileText, Copy, RefreshCw, XCircle, Maximize, Minimize } from 'lucide-react';
 import { motion } from 'motion/react';
+import { useFocusMode } from '../lib/FocusContext';
 
 const TYPES = [
   { id: 'Explain', label: 'Explain' },
@@ -22,6 +23,8 @@ export default function AINotes() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState('');
   const [error, setError] = useState('');
+  
+  const { isFocusMode, toggleFocusMode } = useFocusMode();
 
   const fetchNotes = async (isRetry = false) => {
     if (!topic.trim()) return;
@@ -78,11 +81,20 @@ export default function AINotes() {
     <div className="p-6 max-w-6xl mx-auto pb-24 flex flex-col lg:flex-row gap-8 items-start">
       
       <div className="w-full lg:w-[35%] bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:sticky lg:top-6">
-        <div className="flex items-center gap-3 mb-6">
-          <div className="p-2 bg-purple-50 text-purple-600 rounded-lg">
-            ✨
+        <div className="flex items-center justify-between gap-3 mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
+              ✨
+            </div>
+            <h1 className="text-xl font-bold">AI Smart Notes</h1>
           </div>
-          <h1 className="text-xl font-bold">AI Smart Notes</h1>
+          <button 
+            onClick={toggleFocusMode} 
+            className="flex items-center gap-2 text-xs font-bold bg-slate-900 text-white px-3 py-1.5 rounded-lg hover:bg-slate-800 transition-colors"
+          >
+            {isFocusMode ? <Minimize size={14} /> : <Maximize size={14} />}
+            {isFocusMode ? 'Exit Focus' : 'Focus Mode'}
+          </button>
         </div>
         
         <form onSubmit={handleGenerate} className="space-y-4">
@@ -91,7 +103,7 @@ export default function AINotes() {
             <input 
               type="text"
               placeholder="e.g. Newton's Laws"
-              className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-slate-50"
+              className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 font-medium"
               value={topic}
               onChange={e => setTopic(e.target.value)}
               required
@@ -103,7 +115,7 @@ export default function AINotes() {
             <input 
               type="text"
               placeholder="e.g. 10th Science"
-              className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-slate-50"
+              className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 font-medium"
               value={course}
               onChange={e => setCourse(e.target.value)}
             />
@@ -113,7 +125,7 @@ export default function AINotes() {
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Difficulty</label>
               <select 
-                className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-slate-50"
+                className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 font-medium text-slate-700"
                 value={difficulty}
                 onChange={e => setDifficulty(e.target.value)}
               >
@@ -125,7 +137,7 @@ export default function AINotes() {
             <div>
               <label className="block text-xs font-bold text-slate-500 mb-2 uppercase tracking-wider">Language</label>
               <select 
-                className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-purple-500 outline-none bg-slate-50"
+                className="w-full border border-slate-200 rounded-xl p-3 text-sm focus:ring-2 focus:ring-blue-500 outline-none bg-slate-50 font-medium text-slate-700"
                 value={language}
                 onChange={e => setLanguage(e.target.value)}
               >
@@ -144,10 +156,10 @@ export default function AINotes() {
                   key={type.id}
                   type="button"
                   onClick={() => setSelectedType(type.id)}
-                  className={`text-center px-4 py-2 rounded-xl border text-[11px] font-bold transition-all ${
+                  className={`text-center px-4 py-2.5 rounded-xl border text-[11px] uppercase tracking-wider font-bold transition-all shadow-sm ${
                     selectedType === type.id 
-                      ? 'border-purple-600 bg-purple-50 text-purple-700' 
-                      : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50'
+                      ? 'border-blue-600 bg-blue-50 text-blue-700' 
+                      : 'border-slate-200 text-slate-600 bg-white hover:bg-slate-50 hover:border-slate-300'
                   }`}
                 >
                   {type.label}
@@ -159,16 +171,16 @@ export default function AINotes() {
           <button 
             type="submit" 
             disabled={loading || !topic}
-            className="w-full mt-2 bg-purple-600 hover:bg-purple-700 disabled:bg-slate-300 text-white py-3 rounded-xl text-xs font-bold transition-colors flex justify-center items-center gap-2"
+            className="w-full mt-4 bg-slate-900 hover:bg-slate-800 disabled:bg-slate-200 disabled:text-slate-400 text-white py-3.5 rounded-xl text-sm font-bold transition-colors flex justify-center items-center gap-2 shadow-sm"
           >
-            {loading ? <Loader2 size={16} className="animate-spin" /> : 'Generate Note'}
+            {loading ? <Loader2 size={18} className="animate-spin" /> : 'Generate Note'}
           </button>
         </form>
       </div>
 
       <div className="w-full lg:w-[65%]">
         {error && (
-          <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 mb-6 flex justify-between items-center">
+          <div className="bg-red-50 text-red-600 p-4 rounded-xl border border-red-100 mb-6 flex justify-between items-center shadow-sm">
             <span className="text-sm font-medium">{error}</span>
             <button onClick={() => fetchNotes(true)} className="text-xs bg-red-100 px-3 py-1.5 rounded-lg hover:bg-red-200 font-bold transition-colors flex items-center gap-1">
               <RefreshCw size={14} /> Retry
@@ -177,17 +189,19 @@ export default function AINotes() {
         )}
         
         {loading && !result && (
-          <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
-            <Loader2 size={40} className="animate-spin text-purple-600 mb-4" />
-            <p className="text-slate-500 font-medium animate-pulse">Reading textbooks and organizing thoughts...</p>
+          <div className="bg-white border border-slate-200 rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[450px] shadow-sm">
+            <Loader2 size={40} className="animate-spin text-blue-600 mb-4" />
+            <p className="text-slate-500 font-medium animate-pulse text-sm">Reading textbooks and organizing thoughts...</p>
           </div>
         )}
 
         {!loading && !result && !error && (
-          <div className="bg-white border border-slate-200 border-dashed rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[400px]">
-            <FileText size={48} className="text-slate-300 mb-4" />
-            <h3 className="text-lg font-bold text-slate-700">No notes generated yet</h3>
-            <p className="text-slate-500 mt-2 max-w-sm mx-auto text-sm">Enter a topic on the left and choose an action to get AI-powered study material instantly.</p>
+          <div className="bg-white border border-slate-200 border-dashed rounded-3xl p-12 text-center flex flex-col items-center justify-center min-h-[450px]">
+            <div className="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mb-6">
+              <FileText size={32} className="text-slate-400" />
+            </div>
+            <h3 className="text-xl font-bold text-slate-800 mb-2">No notes generated yet</h3>
+            <p className="text-slate-500 max-w-sm mx-auto text-sm">Enter a topic on the left and choose an action to get AI-powered study material instantly.</p>
           </div>
         )}
 
@@ -212,6 +226,9 @@ export default function AINotes() {
             </div>
             <div className="p-6 md:p-8 prose prose-slate max-w-none w-full markdown-body">
               <ReactMarkdown>{result}</ReactMarkdown>
+            </div>
+            <div className="p-4 bg-slate-50 border-t border-slate-100 text-center">
+              <span className="text-[10px] text-slate-500 font-medium">AI-generated content is for reference only and should not be treated as guaranteed academic truth. Verify important facts.</span>
             </div>
           </motion.div>
         )}
