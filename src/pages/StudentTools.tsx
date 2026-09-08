@@ -1,5 +1,6 @@
 import { Calculator, Clock, CheckCircle2, ChevronRight, Hash, Percent, Calendar } from 'lucide-react';
 import { useState } from 'react';
+import { SEO } from '../components/SEO';
 
 const TOOLS = [
   { name: 'CGPA to Percentage', icon: Percent, category: 'Academic' },
@@ -98,6 +99,7 @@ export default function StudentTools() {
 
   return (
     <div className="space-y-8 px-6 py-8 h-[calc(100vh-8rem)] flex flex-col max-w-7xl mx-auto">
+      <SEO title="Student Utilities" description="Quick calculators and daily utilities designed for students including CGPA calculator, attendance calculator and more." />
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 shrink-0">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Student Utilities</h1>

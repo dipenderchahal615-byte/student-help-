@@ -75,7 +75,7 @@ export default function AITools() {
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-5 border transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-3 ${tool.color}`}>
               <tool.icon size={24} />
             </div>
-            <h3 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-slate-800 transition-colors">{tool.title}</h3>
+            <h2 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-slate-800 transition-colors">{tool.title}</h2>
             <p className="text-slate-500 text-sm mb-8 flex-1 leading-relaxed">{tool.desc}</p>
             <Link 
               to={tool.path}

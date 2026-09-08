@@ -12,6 +12,8 @@ const CAREER_EXAMPLES = [
   'Data Analytics', 'AI', 'Cybersecurity'
 ];
 
+import { SEO } from '../components/SEO';
+
 export default function CareerRoadmap() {
   const { user } = useAuth();
   const [career, setCareer] = useState('');
@@ -55,7 +57,7 @@ export default function CareerRoadmap() {
 
   return (
     <div className="p-6 max-w-5xl mx-auto pb-24 flex flex-col lg:flex-row gap-8 items-start">
-      
+      <SEO title="Career Roadmap Builder" description="Generate personalized, step-by-step career roadmaps using AI to achieve your professional goals." />
       <div className="w-full lg:w-1/3 bg-white p-6 rounded-3xl border border-slate-200 shadow-sm lg:sticky lg:top-6">
         <div className="flex items-center gap-3 mb-6">
           <div className="p-2 bg-amber-50 text-amber-600 rounded-lg">

@@ -4,6 +4,7 @@ import { db, User as DBUser } from '../lib/db';
 import { User, Mail, Shield, Trophy, Flame, Star, LogOut, Loader2 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
+import { SEO } from '../components/SEO';
 
 export default function Profile() {
   const { user, loading: authLoading } = useAuth();
@@ -62,6 +63,7 @@ export default function Profile() {
 
   return (
     <div className="p-6 md:p-10 max-w-5xl mx-auto space-y-8 pb-24">
+      <SEO title="Your Profile" description="Manage your StudentHelp account, view your gamified stats, and track your progress." />
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Your Profile</h1>
         <p className="text-slate-500 mt-1">Manage your account and view your progress.</p>
@@ -71,11 +73,7 @@ export default function Profile() {
         {/* Profile Card */}
         <div className="bg-white border border-slate-200 rounded-3xl p-8 shadow-sm md:col-span-1 flex flex-col items-center text-center">
           <div className="w-28 h-28 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-6 shadow-sm border border-blue-100">
-            {user.photoURL ? (
-              <img src={user.photoURL} alt="Profile" className="w-full h-full rounded-full object-cover" />
-            ) : (
-              <User size={48} />
-            )}
+            <User size={48} />
           </div>
           <h2 className="text-2xl font-bold text-slate-900 mb-1">{user.displayName || 'Student'}</h2>
           <p className="text-sm text-slate-500 flex items-center gap-2 mb-2 font-medium">

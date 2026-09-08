@@ -10,12 +10,25 @@ import { useBlogSEO } from '../../hooks/useBlogSEO';
 export default function BlogDetail() {
   const { slug } = useParams();
   const [blog, setBlog] = useState<BlogPost | null>(null);
+  const [relatedBlogs, setRelatedBlogs] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (slug) {
-      blogDb.blogs.getBySlug(slug).then(data => {
+      blogDb.blogs.getBySlug(slug).then(async (data) => {
         setBlog(data);
+        if (data) {
+          const allBlogs = await blogDb.blogs.getAll();
+          const related = allBlogs
+            .filter(b => b.id !== data.id && b.status === 'published' && (b.category === data.category || b.tags.some(t => data.tags.includes(t))))
+            .slice(0, 3);
+          
+          if (related.length === 0) {
+            setRelatedBlogs(allBlogs.filter(b => b.id !== data.id && b.status === 'published').slice(0, 3));
+          } else {
+            setRelatedBlogs(related);
+          }
+        }
         setLoading(false);
       });
     }
@@ -62,6 +75,17 @@ export default function BlogDetail() {
         image={seoData.image}
         url={`https://studenthelp.com/blog/${blog.slug}`}
         type="article"
+        article={{
+          publishedTime: new Date(blog.createdAt).toISOString(),
+          modifiedTime: new Date(blog.updatedAt).toISOString(),
+          author: blog.authorName,
+          tags: blog.tags
+        }}
+        breadcrumbs={[
+          { name: 'Home', url: 'https://studenthelp.com/' },
+          { name: 'Blog', url: 'https://studenthelp.com/blog' },
+          { name: blog.title, url: `https://studenthelp.com/blog/${blog.slug}` }
+        ]}
       />
       
       <div className="border-b border-slate-100 bg-slate-50 pt-24 pb-16">
@@ -97,22 +121,22 @@ export default function BlogDetail() {
         </div>
       </div>
       
-      <div className="container mx-auto px-4 max-w-4xl -mt-8 relative z-10">
+      <main className="container mx-auto px-4 max-w-4xl -mt-8 relative z-10">
         {blog.featuredImage && (
           <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="rounded-3xl overflow-hidden shadow-xl border border-slate-200 bg-white mb-16 h-[400px]">
             <img src={blog.featuredImage} alt={blog.title} className="w-full h-full object-cover" />
           </motion.div>
         )}
         
-        <div className="prose prose-lg prose-slate max-w-none prose-headings:font-bold prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-img:rounded-2xl">
+        <article className="prose prose-lg prose-slate max-w-none prose-headings:font-bold prose-a:text-blue-600 hover:prose-a:text-blue-700 prose-img:rounded-2xl">
           <ReactMarkdown>{blog.content}</ReactMarkdown>
-        </div>
+        </article>
         
         {blog.tags && blog.tags.length > 0 && (
           <div className="mt-16 pt-8 border-t border-slate-200">
-            <h4 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
+            <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-4 flex items-center gap-2">
               <Tag size={16} /> Tags
-            </h4>
+            </h2>
             <div className="flex flex-wrap gap-2">
               {blog.tags.map(tag => (
                 <span key={tag} className="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-sm font-medium hover:bg-slate-200 cursor-pointer transition-colors">
@@ -122,7 +146,42 @@ export default function BlogDetail() {
             </div>
           </div>
         )}
-      </div>
+      </main>
+
+      {/* Related Articles */}
+      {relatedBlogs.length > 0 && (
+        <section className="container mx-auto px-4 max-w-4xl mt-16 pt-16 border-t border-slate-100">
+          <h2 className="text-2xl font-bold text-slate-900 mb-8">Related Articles</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {relatedBlogs.map((relatedBlog) => (
+              <Link 
+                key={relatedBlog.id} 
+                to={`/blog/${relatedBlog.slug}`}
+                className="group block rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition-all hover:border-blue-200 flex flex-col"
+              >
+                <div className="h-40 bg-slate-100 overflow-hidden">
+                  {relatedBlog.featuredImage ? (
+                    <img src={relatedBlog.featuredImage} alt={relatedBlog.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-200">
+                      <span className="font-bold text-3xl">{relatedBlog.title.charAt(0)}</span>
+                    </div>
+                  )}
+                </div>
+                <div className="p-5 flex flex-col flex-1">
+                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider mb-2">{relatedBlog.category}</span>
+                  <h3 className="font-bold text-slate-900 line-clamp-2 mb-2 group-hover:text-blue-600 transition-colors">
+                    {relatedBlog.title}
+                  </h3>
+                  <div className="mt-auto pt-4 flex items-center gap-2 text-xs font-medium text-slate-500">
+                    <Clock size={14} /> {relatedBlog.readingTime} min read
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

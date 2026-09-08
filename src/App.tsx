@@ -3,7 +3,9 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import React, { Suspense } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { Loader2 } from 'lucide-react';
 import { HelmetProvider } from 'react-helmet-async';
 import PublicLayout from './components/layout/PublicLayout';
 import ProtectedRoute from './components/layout/ProtectedRoute';
@@ -15,42 +17,42 @@ import { ThemeProvider } from './lib/ThemeContext';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
-import Dashboard from './pages/Dashboard';
-import StudyPlanner from './pages/StudyPlanner';
-import StudyHub from './pages/StudyHub';
-import NotesStudio from './pages/NotesStudio';
-import AIAssistant from './pages/AIAssistant';
-import ResumeBuilder from './pages/ResumeBuilder';
-import Portfolio from './pages/Portfolio';
-import CareerRoadmap from './pages/CareerRoadmap';
-import InterviewPractice from './pages/InterviewPractice';
-import Jobs from './pages/Jobs';
-import StudentTools from './pages/StudentTools';
-import Resources from './pages/Resources';
-import Profile from './pages/Profile';
-import Settings from './pages/Settings';
-import PublicPageTemplate from './pages/PublicPageTemplate';
-import LegalPage from './pages/LegalPage';
+const Dashboard = React.lazy(() => import('./pages/Dashboard'));
+const StudyPlanner = React.lazy(() => import('./pages/StudyPlanner'));
+const StudyHub = React.lazy(() => import('./pages/StudyHub'));
+const NotesStudio = React.lazy(() => import('./pages/NotesStudio'));
+const AIAssistant = React.lazy(() => import('./pages/AIAssistant'));
+const ResumeBuilder = React.lazy(() => import('./pages/ResumeBuilder'));
+const Portfolio = React.lazy(() => import('./pages/Portfolio'));
+const CareerRoadmap = React.lazy(() => import('./pages/CareerRoadmap'));
+const InterviewPractice = React.lazy(() => import('./pages/InterviewPractice'));
+const Jobs = React.lazy(() => import('./pages/Jobs'));
+const StudentTools = React.lazy(() => import('./pages/StudentTools'));
+const Resources = React.lazy(() => import('./pages/Resources'));
+const Profile = React.lazy(() => import('./pages/Profile'));
+const Settings = React.lazy(() => import('./pages/Settings'));
+const PublicPageTemplate = React.lazy(() => import('./pages/PublicPageTemplate'));
+const LegalPage = React.lazy(() => import('./pages/LegalPage'));
 
-import AdminLayout from './components/layout/AdminLayout';
-import AdminDashboard from './pages/admin/AdminDashboard';
-import AdminPosts from './pages/admin/AdminPosts';
-import AdminPostEditor from './pages/admin/AdminPostEditor';
-import AdminAIBlog from './pages/admin/AdminAIBlog';
-import AdminCategories from './pages/admin/AdminCategories';
-import AdminTags from './pages/admin/AdminTags';
-import AdminMedia from './pages/admin/AdminMedia';
-import AdminAutomation from './pages/admin/AdminAutomation';
+const AdminLayout = React.lazy(() => import('./components/layout/AdminLayout'));
+const AdminDashboard = React.lazy(() => import('./pages/admin/AdminDashboard'));
+const AdminPosts = React.lazy(() => import('./pages/admin/AdminPosts'));
+const AdminPostEditor = React.lazy(() => import('./pages/admin/AdminPostEditor'));
+const AdminAIBlog = React.lazy(() => import('./pages/admin/AdminAIBlog'));
+const AdminCategories = React.lazy(() => import('./pages/admin/AdminCategories'));
+const AdminTags = React.lazy(() => import('./pages/admin/AdminTags'));
+const AdminMedia = React.lazy(() => import('./pages/admin/AdminMedia'));
+const AdminAutomation = React.lazy(() => import('./pages/admin/AdminAutomation'));
 
-import BlogList from './pages/blog/BlogList';
-import BlogDetail from './pages/blog/BlogDetail';
+const BlogList = React.lazy(() => import('./pages/blog/BlogList'));
+const BlogDetail = React.lazy(() => import('./pages/blog/BlogDetail'));
 
 // New Pages
 import FeaturesPage from './pages/Features';
-import AITools from './pages/AITools';
-import ResumeStudio from './pages/ResumeStudio';
-import CareerExplorer from './pages/CareerExplorer';
-import InterviewLab from './pages/InterviewLab';
+const AITools = React.lazy(() => import('./pages/AITools'));
+const ResumeStudio = React.lazy(() => import('./pages/ResumeStudio'));
+const CareerExplorer = React.lazy(() => import('./pages/CareerExplorer'));
+const InterviewLab = React.lazy(() => import('./pages/InterviewLab'));
 
 import ScrollToTop from './components/ScrollToTop';
 
@@ -62,6 +64,7 @@ export default function App() {
           <FocusProvider>
             <BrowserRouter>
               <ScrollToTop />
+                            <Suspense fallback={<div className="flex items-center justify-center min-h-[60vh]"><Loader2 className="animate-spin text-blue-600" size={40} /></div>}>
               <Routes>
             {/* Public Routes with Navbar/Footer */}
           <Route element={<PublicLayout />}>
@@ -128,6 +131,7 @@ export default function App() {
 
           <Route path="*" element={<PublicPageTemplate title="Page Not Found" />} />
         </Routes>
+              </Suspense>
       </BrowserRouter>
       </FocusProvider>
     </AuthProvider>

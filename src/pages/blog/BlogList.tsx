@@ -67,7 +67,7 @@ export default function BlogList() {
               >
                 <div className="h-48 bg-slate-100 overflow-hidden relative">
                   {blog.featuredImage ? (
-                    <img src={blog.featuredImage} alt={blog.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                    <img src={blog.featuredImage} alt={blog.title} loading="lazy" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center bg-blue-50 text-blue-200">
                       <span className="font-bold text-4xl">{blog.title.charAt(0)}</span>

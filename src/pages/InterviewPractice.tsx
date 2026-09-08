@@ -4,6 +4,8 @@ import { MessagesSquare, Loader2, Play, CheckCircle } from 'lucide-react';
 import { motion } from 'motion/react';
 import ReactMarkdown from 'react-markdown';
 
+import { SEO } from '../components/SEO';
+
 export default function InterviewPractice() {
   const [field, setField] = useState('');
   const [level, setLevel] = useState('Beginner');
@@ -54,7 +56,7 @@ export default function InterviewPractice() {
 
   return (
     <div className="p-6 max-w-4xl mx-auto pb-24 space-y-8">
-      
+      <SEO title="AI Interview Practice" description="Practice interview questions with AI and get instant feedback." />
       <div className="flex items-center gap-3 mb-2">
         <div className="p-2 bg-blue-50 text-blue-600 rounded-xl">
           <MessagesSquare size={20} />

@@ -14,10 +14,12 @@ const CAREERS = [
 ];
 
 import { BrainCircuit } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export default function CareerExplorer() {
   return (
     <div className="space-y-8 px-6 py-8 max-w-6xl mx-auto">
+      <SEO title="Career Explorer" description="Discover career paths, understand required skills, and navigate your professional journey." />
       <div className="text-center py-8">
         <h1 className="text-3xl md:text-5xl font-extrabold text-slate-900 tracking-tight mb-4">Career Explorer</h1>
         <p className="text-slate-600 font-medium max-w-2xl mx-auto">Discover career paths, understand required skills, and navigate your professional journey.</p>
@@ -41,7 +43,7 @@ export default function CareerExplorer() {
             <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-6 transition-all duration-500 transform group-hover:scale-110 group-hover:-rotate-3 ${career.color}`}>
               <career.icon size={24} />
             </div>
-            <h3 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-slate-800 transition-colors">{career.name}</h3>
+            <h2 className="font-bold text-lg text-slate-900 mb-2 group-hover:text-slate-800 transition-colors">{career.name}</h2>
             <p className="text-sm text-slate-500 mb-6">Explore the skills, tools, and roadmap to become a professional in {career.name.toLowerCase()}.</p>
             <Link 
               to="/career-roadmap" 

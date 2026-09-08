@@ -19,6 +19,8 @@ const DEFAULT_RESUME: ResumeData = {
   lastUpdated: Date.now()
 };
 
+import { SEO } from '../components/SEO';
+
 export default function ResumeBuilder() {
   const { user, loading: authLoading } = useAuth();
   const [resume, setResume] = useState<ResumeData>(DEFAULT_RESUME);
@@ -105,6 +107,7 @@ export default function ResumeBuilder() {
 
   return (
     <div className="p-6 max-w-7xl mx-auto pb-24 flex flex-col gap-6">
+      <SEO title="Resume Builder" description="Create a professional, ATS-friendly resume quickly and easily. Save and download as PDF." />
       
       {/* Progress Stepper */}
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 print:hidden">

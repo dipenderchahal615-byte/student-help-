@@ -5,6 +5,7 @@ import { db } from '../lib/db';
 import { useAuth } from '../lib/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 import { motion } from 'motion/react';
+import { SEO } from '../components/SEO';
 
 interface Task {
   title: string;
@@ -91,6 +92,7 @@ export default function StudyPlanner() {
 
   return (
     <div className="space-y-8 px-6 py-8 h-[calc(100vh-8rem)] flex flex-col max-w-7xl mx-auto">
+      <SEO title="Study Planner Generator" description="Create personalized study schedules tailored to your exams and weak subjects using AI." />
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4 shrink-0 mb-2">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Study Planner</h1>
@@ -217,7 +219,7 @@ export default function StudyPlanner() {
                     
                     <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white border border-slate-200 rounded-3xl p-5 shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex justify-between items-center mb-4">
-                        <h4 className="font-bold text-slate-900 text-lg">{dayPlan.day}</h4>
+                        <h3 className="font-bold text-slate-900 text-lg">{dayPlan.day}</h3>
                         <span className="text-xs font-bold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">{dayPlan.hours} Hours</span>
                       </div>
                       <div className="space-y-3">

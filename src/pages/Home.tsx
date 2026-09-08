@@ -277,7 +277,7 @@ export default function Home() {
               <div className="flex items-center gap-3 mb-6 border-b border-slate-700 pb-4">
                 <div className="w-10 h-10 rounded-full bg-blue-500 flex items-center justify-center text-white"><Sparkles size={20}/></div>
                 <div>
-                  <h4 className="text-white font-bold text-lg">StudentHelp AI</h4>
+                  <h3 className="text-white font-bold text-lg">StudentHelp AI</h3>
                   <p className="text-sm text-slate-400">Always online & ready to help</p>
                 </div>
               </div>

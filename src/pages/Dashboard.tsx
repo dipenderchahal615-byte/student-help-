@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db, StudyPlan, SavedNote, CareerRoadmap, User as DBUser, UpcomingExam, DailyGoal } from '../lib/db';
 import { Link } from 'react-router-dom';
+import { SEO } from '../components/SEO';
 import { 
   BookOpen, BrainCircuit, Map, Trash2, ArrowRight, Loader2, AlertCircle,
   Trophy, Flame, Target, CalendarDays, Plus, Briefcase, FileText, Sparkles, MessagesSquare
@@ -129,6 +130,8 @@ export default function Dashboard() {
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto pb-24 space-y-10">
+      <SEO title="Student Dashboard" description="Track your study plans, career roadmap, saved notes and exam schedule on your personalized student dashboard." />
+      
       {error && <div className="bg-red-50 text-red-600 p-4 rounded-xl">{error}</div>}
       
       {/* Header & 4-Card Layout */}
@@ -242,7 +245,7 @@ export default function Dashboard() {
               <div className="space-y-3 mb-6">
                 {roadmaps.slice(0, 3).map(rm => (
                   <div key={rm.id} className="bg-slate-800 p-4 rounded-2xl border border-slate-700 hover:border-slate-600 transition-colors">
-                    <h4 className="font-bold text-sm text-slate-200 truncate mb-2">{rm.career}</h4>
+                    <h3 className="font-bold text-sm text-slate-200 truncate mb-2">{rm.career}</h3>
                     <div className="w-full bg-slate-900 rounded-full h-1.5">
                       <div className="bg-blue-500 h-1.5 rounded-full" style={{ width: '45%' }}></div>
                     </div>
@@ -308,7 +311,7 @@ export default function Dashboard() {
             notes.slice(0, 4).map(note => (
               <div key={note.id} className="p-5 rounded-2xl border border-slate-100 bg-white shadow-sm hover:border-slate-300 hover:shadow-md transition-all group flex justify-between items-start">
                 <div className="truncate pr-4">
-                  <h4 className="font-bold text-slate-900 text-sm truncate mb-1">{note.topic}</h4>
+                  <h3 className="font-bold text-slate-900 text-sm truncate mb-1">{note.topic}</h3>
                   <p className="text-xs text-slate-500 capitalize font-medium">{note.type.replace('_', ' ')}</p>
                 </div>
                 <button onClick={() => handleDeleteNote(note.id)} className="text-slate-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-lg opacity-0 group-hover:opacity-100 transition-all shrink-0">

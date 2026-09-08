@@ -82,9 +82,9 @@ export default function FeaturesPage() {
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center mb-6 transition-all duration-500 transform group-hover:scale-110 group-hover:rotate-3 ${feature.color}`}>
                 <Icon size={28} />
               </div>
-              <h3 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-slate-800 transition-colors">
+              <h2 className="text-xl font-bold text-slate-900 mb-2 group-hover:text-slate-800 transition-colors">
                 {feature.title}
-              </h3>
+              </h2>
               <p className="text-slate-600 mb-8 flex-1 text-sm leading-relaxed">
                 {feature.desc}
               </p>

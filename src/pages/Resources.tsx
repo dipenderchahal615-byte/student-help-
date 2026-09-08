@@ -1,4 +1,5 @@
 import { Library, ExternalLink } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 const CATEGORIES = [
   {
@@ -29,6 +30,7 @@ const CATEGORIES = [
 export default function Resources() {
   return (
     <div className="p-6 max-w-5xl mx-auto pb-24">
+      <SEO title="Student Resources" description="Curated list of the best online resources for learning, coding, career preparation, and more." />
       <div className="flex items-center gap-3 mb-8">
         <div className="p-2 bg-indigo-100 text-indigo-600 rounded-xl">
           <Library size={24} />

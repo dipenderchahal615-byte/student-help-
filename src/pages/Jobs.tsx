@@ -3,6 +3,7 @@ import { Briefcase, Search, Plus, ExternalLink, Calendar, MapPin, Building, Tras
 import { db, JobApplication } from '../lib/db';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../lib/AuthContext';
+import { SEO } from '../components/SEO';
 
 const STATUS_COLORS = {
   Saved: 'bg-slate-100 text-slate-700 border-slate-200',
@@ -85,6 +86,7 @@ export default function Jobs() {
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-10 pb-24">
+      <SEO title="Job Applications Tracker" description="Track your internship and job applications, monitor statuses, and organize your job hunt." />
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Job Tracker</h1>

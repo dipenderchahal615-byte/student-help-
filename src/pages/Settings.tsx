@@ -1,5 +1,6 @@
 import { Moon, Sun, Bell, Globe, Shield, Database } from 'lucide-react';
 import { useState } from 'react';
+import { SEO } from '../components/SEO';
 
 export default function Settings() {
   const [theme, setTheme] = useState('light');
@@ -7,6 +8,7 @@ export default function Settings() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
+      <SEO title="Settings" description="Manage your application preferences, appearance, and account settings." />
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Settings</h1>
         <p className="text-slate-500 font-medium mt-1">Manage your account preferences and application settings.</p>

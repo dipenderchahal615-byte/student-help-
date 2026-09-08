@@ -1,9 +1,11 @@
 import { Link } from 'react-router-dom';
 import { MessageSquare, Users, Code, Target, Play, History, Star } from 'lucide-react';
+import { SEO } from '../components/SEO';
 
 export default function InterviewLab() {
   return (
     <div className="space-y-8 px-6 py-8 max-w-6xl mx-auto">
+      <SEO title="Interview Lab" description="Practice your interview skills with AI-powered mock interviews and get actionable feedback." />
       <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Interview Lab</h1>

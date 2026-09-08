@@ -72,13 +72,9 @@ export default function PublicLayout() {
                 </Link>
                 <div className="relative group">
                   <button className="flex items-center gap-2 p-1 rounded-full hover:bg-slate-800 transition-colors focus:outline-none">
-                    {user.photoURL ? (
-                      <img src={user.photoURL} alt="Profile" className="w-10 h-10 rounded-full border-2 border-slate-700 shadow-sm" />
-                    ) : (
-                      <div className="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-700 shadow-sm flex items-center justify-center text-blue-400 font-bold">
-                        {user.email?.charAt(0).toUpperCase() || 'S'}
-                      </div>
-                    )}
+                    <div className="w-10 h-10 rounded-full bg-slate-800 border-2 border-slate-700 shadow-sm flex items-center justify-center text-blue-400">
+                      <UserCircle size={24} />
+                    </div>
                   </button>
                   
                   {/* Dropdown Menu */}
@@ -169,13 +165,9 @@ export default function PublicLayout() {
                 {user ? (
                   <div className="space-y-3">
                     <div className="flex items-center gap-3 px-2 mb-4">
-                      {user.photoURL ? (
-                        <img src={user.photoURL} alt="Profile" className="w-10 h-10 rounded-full border border-slate-200" />
-                      ) : (
-                        <div className="w-10 h-10 rounded-full bg-blue-100 border border-slate-200 flex items-center justify-center text-blue-700 font-bold">
-                          {user.email?.charAt(0).toUpperCase() || 'S'}
-                        </div>
-                      )}
+                      <div className="w-10 h-10 rounded-full bg-blue-100 border border-slate-200 flex items-center justify-center text-blue-700">
+                        <UserCircle size={24} />
+                      </div>
                       <div className="overflow-hidden">
                         <p className="text-sm font-bold text-slate-900 truncate">{user.displayName || 'Student'}</p>
                         <p className="text-xs text-slate-500 truncate">{user.email}</p>

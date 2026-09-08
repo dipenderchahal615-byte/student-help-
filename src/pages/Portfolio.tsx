@@ -5,6 +5,8 @@ import { Link2, Globe, ExternalLink, Loader2, Save, PenTool } from 'lucide-react
 import { useAuth } from '../lib/AuthContext';
 import { v4 as uuidv4 } from 'uuid';
 
+import { SEO } from '../components/SEO';
+
 export default function Portfolio() {
   const { user } = useAuth();
   const [portfolio, setPortfolio] = useState<PortfolioData | null>(null);
@@ -96,6 +98,7 @@ export default function Portfolio() {
 
   return (
     <div className="p-6 md:p-10 max-w-7xl mx-auto space-y-10 pb-24">
+      <SEO title="Portfolio Generator" description="Turn your resume into a beautiful personal website in one click." />
       <div>
         <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Portfolio Generator</h1>
         <p className="text-slate-500 mt-1">Turn your resume into a beautiful personal website in one click.</p>

@@ -128,7 +128,7 @@ export default function AdminDashboard() {
                   <div key={blog.id} className="flex items-center justify-between p-4 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors">
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center overflow-hidden">
-                        {blog.featuredImage ? <img src={blog.featuredImage} className="w-full h-full object-cover" alt="" /> : <FileText size={18} className="text-slate-400" />}
+                        {blog.featuredImage ? <img src={blog.featuredImage} className="w-full h-full object-cover" loading="lazy" alt={`Cover for ${blog.title}`} /> : <FileText size={18} className="text-slate-400" />}
                       </div>
                       <div>
                         <p className="font-bold text-slate-800 line-clamp-1">{blog.title}</p>

@@ -5,6 +5,7 @@ import { sendChatMessage } from '../lib/api';
 import { v4 as uuidv4 } from 'uuid';
 import { useAuth } from '../lib/AuthContext';
 import ReactMarkdown from 'react-markdown';
+import { SEO } from '../components/SEO';
 
 export default function AIChat() {
   const { user } = useAuth();
@@ -98,6 +99,7 @@ export default function AIChat() {
 
   return (
     <div className="p-6 md:p-10 max-w-5xl mx-auto h-[calc(100vh-80px)] flex flex-col">
+      <SEO title="AI Assistant" description="Your smart digital companion for studies, career advice, and general guidance." />
       <div className="flex justify-between items-center mb-6">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
